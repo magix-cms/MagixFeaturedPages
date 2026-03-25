@@ -1,0 +1,14 @@
+{
+  "name": "MagixFeaturedPages",
+  "version": "1.0.0",
+  "author": "Magix Dev",
+  "type": "widget",
+  "has_config": true,
+  "core_targets": {
+    "home": 1,
+    "pages": 1
+  },
+  "default_hooks": [
+    "displayHomeBottom"
+  ]
+}
