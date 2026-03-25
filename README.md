@@ -46,6 +46,8 @@ Ce plugin a été conçu en respectant l'architecture stricte de **Magix CMS V4*
 * **Backend UI** : L'interface d'administration repose sur la classe Javascript mutualisée `MagixItemSelector.js` qui orchestre Fetch API, Sortable.js et MagixToast.
 * **Sécurité (Sandboxing)** : Intégration d'un système de `try/catch` global dans le `FrontendController`. Si le plugin rencontre une erreur technique, il n'entraîne pas d'Erreur Fatale PHP et laisse le reste du site public s'afficher sans interruption.
 
-## 📝 Licence
+## 📄 Licence
 
-Ce projet est sous licence MIT. Vous êtes libre de l'utiliser, de le modifier et de le distribuer. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est sous licence **GPLv3**. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Copyright (C) 2008 - 2026 Gerits Aurelien (Magix CMS)
+Ce programme est un logiciel libre ; vous pouvez le redistribuer et/ou le modifier selon les termes de la Licence Publique Générale GNU telle que publiée par la Free Software Foundation ; soit la version 3 de la Licence, ou (à votre discrétion) toute version ultérieure.
