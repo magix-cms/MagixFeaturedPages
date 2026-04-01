@@ -9,10 +9,10 @@ class Boot
 {
     public function register(): void
     {
-        HookManager::register(
+        /*HookManager::register(
             'displayHomeBottom',
             'MagixFeaturedPages',
             [\Plugins\MagixFeaturedPages\src\FrontendController::class, 'renderWidget']
-        );
+        );*/
     }
 }
