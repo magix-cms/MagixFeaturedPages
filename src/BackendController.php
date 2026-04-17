@@ -14,36 +14,27 @@ class BackendController extends BaseController
         $db = new FeaturedPagesAdminDb();
         $idLang = (int)($this->defaultLang['id_lang'] ?? 1);
 
-        // 🟢 INTERCEPTION DE LA RECHERCHE AJAX
         if (isset($_GET['action']) && $_GET['action'] === 'search') {
             $term = $_GET['q'] ?? '';
-            if (strlen($term) > 1) {
-                $results = $db->searchActivePages($term, $idLang);
-                echo json_encode($results);
-            } else {
-                echo json_encode([]);
-            }
+            echo json_encode($db->searchActivePages($term, $idLang));
             exit;
         }
 
-        // 🟢 SAUVEGARDE DU FORMULAIRE
         if (Request::isMethod('POST')) {
-            $token = $_POST['hashtoken'] ?? '';
-            if (!$this->session->validateToken($token)) {
+            if (!$this->session->validateToken($_POST['hashtoken'] ?? '')) {
                 $this->jsonResponse(false, 'Session expirée.');
             }
 
-            $selectedIds = $_POST['featured_pages'] ?? [];
-            if ($db->saveFeaturedPages($selectedIds)) {
-                $this->jsonResponse(true, 'Pages mises en avant sauvegardées avec succès.');
-            } else {
-                $this->jsonResponse(false, 'Erreur de sauvegarde.');
+            // On reçoit un tableau : featured_pages[instance_slug][]
+            $data = $_POST['featured_pages'] ?? [];
+            if ($db->saveAllInstances($data)) {
+                $this->jsonResponse(true, 'Configuration sauvegardée.');
             }
             return;
         }
 
-        // 🟢 AFFICHAGE DE LA PAGE
         $this->view->assign([
+            'instances'      => $db->getRegisteredInstances(),
             'selected_pages' => $db->getSelectedPagesFull($idLang),
             'hashtoken'      => $this->session->getToken()
         ]);

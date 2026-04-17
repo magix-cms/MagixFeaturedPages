@@ -1,103 +1,209 @@
 {extends file="layout.tpl"}
 
-{block name='head:title'}Pages en page d'accueil{/block}
+{block name='head:title'}Pages mises en avant{/block}
+
+{block name="stylesheets" append nocache}
+    <link href="{$site_url}/{$baseadmin}/templates/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+{/block}
 
 {block name='article'}
-    <div class="row">
-        {* COLONNE DE GAUCHE : LA RECHERCHE *}
-        <div class="col-md-5 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-search"></i> Ajouter une page</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3 position-relative">
-                        <label class="form-label text-muted small">Rechercher par nom</label>
-                        <input type="text" id="ajaxSearchInput" class="form-control" placeholder="Taper au moins 2 caractères..." autocomplete="off">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h1 class="h2 mb-0"><i class="bi bi-file-earmark-star text-warning me-2"></i>Pages mises en avant</h1>
+    </div>
 
-                        {* Container des résultats AJAX *}
-                        <div id="ajaxSearchResults" class="list-group position-absolute w-100 shadow mt-1" style="z-index: 1050; display: none; max-height: 250px; overflow-y: auto;">
+    <form method="post" action="index.php?controller=MagixFeaturedPages" class="validate_form">
+        <input type="hidden" name="hashtoken" value="{$hashtoken}">
+
+        {* --- 1. LES ONGLETS (TABS) POUR CHAQUE INSTANCE --- *}
+        <ul class="nav nav-tabs" id="featuredTabs" role="tablist">
+            {foreach $instances as $index => $slug}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {if $index == 0}active fw-bold{/if}"
+                            id="tab-{$slug}-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-{$slug}"
+                            type="button" role="tab">
+                        {if $slug == 'default'}
+                            <i class="bi bi-box me-1"></i> Bloc Principal
+                        {else}
+                            <i class="bi bi-diagram-3 me-1"></i> Bloc : <span class="text-primary">{$slug}</span>
+                        {/if}
+                    </button>
+                </li>
+            {/foreach}
+        </ul>
+
+        {* --- 2. LE CONTENU DES ONGLETS --- *}
+        <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm mb-4" id="featuredTabsContent">
+
+            {foreach $instances as $index => $slug}
+                <div class="tab-pane fade {if $index == 0}show active{/if}" id="tab-{$slug}" role="tabpanel">
+                    <div class="row">
+
+                        {* COLONNE RECHERCHE (TomSelect) *}
+                        <div class="col-md-5 mb-4 mb-md-0">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted mb-3"><i class="bi bi-search me-2"></i>Ajouter à ce bloc</h6>
+                                    {* Le select qui sera transformé par TomSelect *}
+                                    <select class="tom-select-pages" data-slug="{$slug}" placeholder="Rechercher une page..."></select>
+                                    <div class="form-text small mt-2">Tapez au moins 2 lettres pour lancer la recherche.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {* COLONNE RÉSULTATS (Sortable) *}
+                        <div class="col-md-7">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0 fw-bold"><i class="bi bi-list-ol me-2"></i>Pages sélectionnées</h6>
+                                <span class="badge bg-secondary rounded-pill" id="count-{$slug}">{if isset($selected_pages[$slug])}{$selected_pages[$slug]|count}{else}0{/if}</span>
+                            </div>
+
+                            <div class="alert alert-info py-2 small mb-3">
+                                <i class="bi bi-arrows-move me-1"></i> Glissez-déposez les lignes pour modifier l'ordre.
+                            </div>
+
+                            <ul class="list-group sortable-list" id="list-{$slug}">
+                                {if isset($selected_pages[$slug])}
+                                    {foreach $selected_pages[$slug] as $p}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center bg-white border-bottom cursor-move">
+                                            {* 🟢 LA CORRECTION EST ICI : featured_pages[$slug][] *}
+                                            <input type="hidden" name="featured_pages[{$slug}][]" value="{$p.id_pages}">
+
+                                            <div class="d-flex align-items-center w-100">
+                                                <i class="bi bi-grip-vertical text-muted me-3 fs-5 drag-handle" style="cursor: move;"></i>
+                                                <div>
+                                                    <strong class="d-block text-dark">{$p.name_pages}</strong>
+                                                    <small class="text-muted">{$p.url_pages|default:'/'}</small>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove ms-2" title="Retirer" onclick="removeFeaturedPage(this, '{$slug}')">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </li>
+                                    {/foreach}
+                                {/if}
+                            </ul>
                         </div>
                     </div>
                 </div>
-            </div>
+            {/foreach}
+
         </div>
 
-        {* COLONNE DE DROITE : LES SÉLECTIONNÉS *}
-        <div class="col-md-7 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-file-earmark-star-fill text-warning"></i> Pages en page d'accueil</h5>
-                    <span class="badge bg-primary" id="countSelected">{$selected_pages|count}</span>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="index.php?controller=MagixFeaturedPages" class="validate_form">
-                        <input type="hidden" name="hashtoken" value="{$hashtoken}">
-
-                        <div class="alert alert-info py-2 small">
-                            <i class="bi bi-info-circle me-1"></i> Utilisez les flèches pour modifier l'ordre d'affichage.
-                        </div>
-
-                        {* La liste des pages choisies (Draggable) *}
-                        <ul class="list-group mb-4" id="selectedPagesList">
-                            {foreach $selected_pages as $p}
-                                <li class="list-group-item d-flex justify-content-between align-items-center bg-light border-bottom cursor-move" draggable="true" data-id="{$p.id_pages}">
-                                    <input type="hidden" name="featured_pages[]" value="{$p.id_pages}">
-                                    <div class="d-flex align-items-center w-100">
-                                        <i class="bi bi-grip-vertical text-muted me-3 fs-5"></i>
-                                        <div>
-                                            <strong class="d-block text-dark">{$p.name_pages}</strong>
-                                            <small class="text-muted">{$p.url_pages|default:'/'}</small>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove ms-2" title="Retirer"><i class="bi bi-x-lg"></i></button>
-                                </li>
-                            {/foreach}
-                        </ul>
-
-                        <div id="saveIndicator" class="text-success text-center fw-bold" style="display: none;">
-                            <i class="bi bi-check-circle"></i> Sauvegardé automatiquement
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+        <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+            <i class="bi bi-save me-2"></i> Enregistrer les blocs
+        </button>
+    </form>
 {/block}
 
 {block name="javascripts" append}
-    {* Assurez-vous que sortable.js est chargé dans votre layout global *}
-    <script src="templates/js/MagixItemSelector.min.js?v={$smarty.now}"></script>
+    <script src="{$site_url}/{$baseadmin}/templates/js/vendor/tom-select.complete.min.js"></script>
+
     <script>
         {literal}
         document.addEventListener('DOMContentLoaded', function() {
-            const token = document.querySelector('input[name="hashtoken"]').value;
 
-            new MagixItemSelector({
-                searchInputId: 'ajaxSearchInput',
-                searchResultsId: 'ajaxSearchResults',
-                selectedListId: 'selectedPagesList',
-                countBadgeId: 'countSelected',
-                searchUrl: 'index.php?controller=MagixFeaturedPages&action=search&q=',
-                saveUrl: 'index.php?controller=MagixFeaturedPages',
-                inputName: 'featured_pages[]',
-                token: token,
+            // 1. Initialisation de TomSelect pour chaque bloc
+            document.querySelectorAll('.tom-select-pages').forEach(function(selectEl) {
+                const slug = selectEl.getAttribute('data-slug');
 
-                // Comment afficher un résultat de recherche
-                renderResultItem: (item) => `<strong>${item.name_pages}</strong>`,
+                new TomSelect(selectEl, {
+                    valueField: 'id_pages',
+                    labelField: 'name_pages',
+                    searchField: 'name_pages',
+                    placeholder: "Rechercher par nom...",
+                    load: function(query, callback) {
+                        if (!query.length) return callback();
 
-                // Comment afficher l'élément une fois ajouté dans la liste (avec la poignée Sortable)
-                renderAddedItem: (item) => `
-                    <div class="d-flex align-items-center w-100">
-                        <i class="bi bi-grip-vertical text-muted me-3 fs-5 cursor-move"></i>
-                        <div>
-                            <strong class="d-block text-dark">${item.name_pages}</strong>
-                            <small class="text-muted">Nouvelle page ajoutée</small>
-                        </div>
-                    </div>
-                `
+                        // Appel AJAX vers le BackendController du plugin
+                        fetch('index.php?controller=MagixFeaturedPages&action=search&q=' + encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(json => {
+                                callback(json);
+                            }).catch(() => {
+                            callback();
+                        });
+                    },
+                    render: {
+                        option: function(item, escape) {
+                            return `<div><strong class="text-dark">${escape(item.name_pages)}</strong></div>`;
+                        },
+                        item: function(item, escape) {
+                            return `<div>${escape(item.name_pages)}</div>`;
+                        }
+                    },
+                    onChange: function(value) {
+                        if (!value) return;
+                        const item = this.options[value];
+                        if (item) {
+                            // On ajoute la ligne dans le bon onglet
+                            addPageToList(slug, item.id_pages, item.name_pages);
+                            // On vide le champ de recherche
+                            this.clear();
+                        }
+                    }
+                });
+            });
+
+            // 2. Initialisation du Drag & Drop (SortableJS)
+            document.querySelectorAll('.sortable-list').forEach(function(listEl) {
+                if (typeof Sortable !== 'undefined') {
+                    new Sortable(listEl, {
+                        animation: 150,
+                        handle: '.drag-handle',
+                        ghostClass: 'bg-light'
+                    });
+                }
             });
         });
+
+        // Fonction pour ajouter un élément visuel à la liste et mettre à jour le compteur
+        function addPageToList(slug, id, name) {
+            const ul = document.getElementById('list-' + slug);
+
+            // Sécurité : vérifier que la page n'est pas déjà dans ce bloc précis
+            if (ul.querySelector(`input[value="${id}"]`)) {
+                if (typeof MagixToast !== 'undefined') {
+                    MagixToast.warning("Cette page est déjà dans ce bloc.");
+                } else {
+                    alert("Cette page est déjà dans ce bloc.");
+                }
+                return;
+            }
+
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center bg-white border-bottom cursor-move';
+
+            // 🟢 LE CŒUR DU SYSTÈME MULTI-INSTANCES : name="featured_pages[slug][]"
+            li.innerHTML = `
+                <input type="hidden" name="featured_pages[${slug}][]" value="${id}">
+                <div class="d-flex align-items-center w-100">
+                    <i class="bi bi-grip-vertical text-muted me-3 fs-5 drag-handle" style="cursor: move;"></i>
+                    <div>
+                        <strong class="d-block text-dark">${name}</strong>
+                        <small class="text-muted text-success">Nouvelle page ajoutée</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remove ms-2" title="Retirer" onclick="removeFeaturedPage(this, '${slug}')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+            ul.appendChild(li);
+            updateBadgeCount(slug);
+        }
+
+        // Fonction pour retirer une page d'un bloc
+        window.removeFeaturedPage = function(btn, slug) {
+            btn.closest('li').remove();
+            updateBadgeCount(slug);
+        }
+
+        function updateBadgeCount(slug) {
+            const ul = document.getElementById('list-' + slug);
+            const count = ul.querySelectorAll('li').length;
+            document.getElementById('count-' + slug).textContent = count;
+        }
         {/literal}
     </script>
 {/block}
