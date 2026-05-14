@@ -6,6 +6,7 @@ namespace Plugins\MagixFeaturedPages\src;
 use App\Backend\Controller\BaseController;
 use Plugins\MagixFeaturedPages\db\FeaturedPagesAdminDb;
 use Magepattern\Component\HTTP\Request;
+use App\Component\Cache\CacheManager;
 
 class BackendController extends BaseController
 {
@@ -28,6 +29,7 @@ class BackendController extends BaseController
             // On reçoit un tableau : featured_pages[instance_slug][]
             $data = $_POST['featured_pages'] ?? [];
             if ($db->saveAllInstances($data)) {
+                CacheManager::clearFrontend('magixfeaturedpages');
                 $this->jsonResponse(true, 'Configuration sauvegardée.');
             }
             return;

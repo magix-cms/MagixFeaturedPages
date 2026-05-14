@@ -12,16 +12,16 @@ class FrontendController
 {
     public static function renderWidget(array $params = []): string
     {
-        // 🟢 1. SÉCURITÉ / AIGUILLAGE
+        //  1. SÉCURITÉ / AIGUILLAGE
         $hookName = $params['name'] ?? '';
         if (!str_starts_with($hookName, 'displayHome')) {
             return '';
         }
 
-        // 🟢 NOUVEAU : On récupère l'identifiant unique du bloc passé par le Layout
+        //  NOUVEAU : On récupère l'identifiant unique du bloc passé par le Layout
         $instanceSlug = !empty($params['instance_slug']) ? $params['instance_slug'] : 'default';
 
-        // 🟢 2. TRAITEMENT NORMAL
+        //  2. TRAITEMENT NORMAL
         $currentLang = $params['current_lang'] ?? ['id_lang' => 1, 'iso_lang' => 'fr'];
         $idLang      = (int)$currentLang['id_lang'];
         $siteUrl     = $params['site_url'] ?? 'http://localhost';
@@ -29,7 +29,7 @@ class FrontendController
         $skinFolder  = $params['mc_settings']['theme']['value'] ?? 'default';
 
         $featuredDb = new FeaturedPagesFrontDb();
-        // 🟢 NOUVEAU : On filtre les pages par instance
+        //  NOUVEAU : On filtre les pages par instance
         $pageIds = $featuredDb->getFeaturedPageIds($instanceSlug);
 
         if (empty($pageIds)) return '';
@@ -49,13 +49,13 @@ class FrontendController
 
         $view = SmartyTool::getInstance('front');
 
-        // 🟢 NOUVEAU : On passe le slug à la vue (utile si vous voulez créer des IDs CSS dynamiques)
+        //  NOUVEAU : On passe le slug à la vue (utile si vous voulez créer des IDs CSS dynamiques)
         $view->assign([
             'featured_pages' => $formattedPages,
             'instance_slug'  => $instanceSlug
         ]);
 
-        // 🟢 CONSERVÉ : Votre chemin d'origine absolu
+        //  CONSERVÉ : Votre chemin d'origine absolu
         return $view->fetch(ROOT_DIR . 'plugins/MagixFeaturedPages/views/front/widget.tpl');
     }
 }

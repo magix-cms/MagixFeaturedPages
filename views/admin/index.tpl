@@ -67,7 +67,7 @@
                                 {if isset($selected_pages[$slug])}
                                     {foreach $selected_pages[$slug] as $p}
                                         <li class="list-group-item d-flex justify-content-between align-items-center bg-white border-bottom cursor-move">
-                                            {* 🟢 LA CORRECTION EST ICI : featured_pages[$slug][] *}
+                                            {*  LA CORRECTION EST ICI : featured_pages[$slug][] *}
                                             <input type="hidden" name="featured_pages[{$slug}][]" value="{$p.id_pages}">
 
                                             <div class="d-flex align-items-center w-100">
@@ -175,7 +175,7 @@
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center bg-white border-bottom cursor-move';
 
-            // 🟢 LE CŒUR DU SYSTÈME MULTI-INSTANCES : name="featured_pages[slug][]"
+            //  LE CŒUR DU SYSTÈME MULTI-INSTANCES : name="featured_pages[slug][]"
             li.innerHTML = `
                 <input type="hidden" name="featured_pages[${slug}][]" value="${id}">
                 <div class="d-flex align-items-center w-100">
